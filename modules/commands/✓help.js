@@ -1,77 +1,111 @@
-
 module.exports.config = {
   name: "اوامر",
-  version: "1.0.2",
+  version: "1.0.4",
   hasPermssion: 0,
-  credits: "انس",
-  description: "قاءمة الاوامر",
-  commandCategory: "نضام",
-  usages: "[Name module]",
-  cooldowns: 5,
-  envConfig: {
-    autoUnsend: true,
-    delayUnsend: 20
+  credits: "XaviaTeam",
+  description: "عرض جميع الأوامر أو تفاصيل أمر معين",
+  commandCategory: "خدمات",
+  usages: "[اسم الأمر] (اختياري)",
+  cooldowns: 3
+};
+
+const langData = {
+  "ar_SY": {
+    "help.list": "{list}",
+    "help.commandNotExists": "❌ الأمر {command} غير موجود.",
+    "help.commandDetails": " ◆ الاسم: {name}\n ◆ الأسماء المستعارة: {aliases}\n ◆ الوصف: {description}\n ◆ الاستخدام: {usage}\n ◆ الصلاحيات: {permissions}\n ◆ الفئة: {category}\n ◆ وقت الانتظار: {cooldown} ثانية\n ◆ المطور: Rako San",
+    "0": "عضو",
+    "1": "إدارة المجموعة",
+    "2": "إدارة البوت",
+    "ADMIN": "المطور",
+    "GENERAL": "عضو",
+    "TOOLS": "أدوات",
+    "ECONOMY": "اقتصاد",
+    "MEDIA": "وسائط",
+    "GROUP": "مجموعة",
+    "AI": "ذكاء"
   }
 };
 
-module.exports.languages = {
-  "en": {
-    "moduleInfo": "「 %1 」\n%2\n\n❯ Usage: %3\n❯ Category: %4\n❯ Waiting time: %5 seconds(s)\n❯ Permission: %6\n\n» Module code by %7 «",
-    "helpList": '[ There are %1 commands on this bot, Use: "%2help nameCommand" to know how to use! ]',
-    "user": "User",
-        "adminGroup": "Admin group",
-        "adminBot": "Admin bot"
+const fs = require("fs");
+const axios = require("axios");
+
+async function ensureImageExists() {
+  const folderPath = "./modules/commands/cache";
+  const filePath = `${folderPath}/botW.jpg`;
+  const imageUrl = "https://i.postimg.cc/sgQGvR9M/anime-girl.png";
+
+  if (!fs.existsSync(folderPath)) fs.mkdirSync(folderPath, { recursive: true });
+  if (!fs.existsSync(filePath)) {
+    const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
+    fs.writeFileSync(filePath, Buffer.from(response.data));
   }
-};
 
-module.exports.handleEvent = function ({ api, event, getText }) {
-  const { commands } = global.client;
-  const { threadID, messageID, body } = event;
-
-  if (!body || typeof body == "cmd" || body.indexOf("help") != 0) return;
-  const splitBody = body.slice(body.indexOf("help")).trim().split(/\s+/);
-  if (splitBody.length == 1 || !commands.has(splitBody[1].toLowerCase())) return;
-  const threadSetting = global.data.threadData.get(parseInt(threadID)) || {};
-  const command = commands.get(splitBody[1].toLowerCase());
-  const prefix = (threadSetting.hasOwnProperty("PREFIX")) ? threadSetting.PREFIX : global.config.PREFIX;
-  return api.sendMessage(getText("moduleInfo", command.config.name, command.config.description, `${prefix}${command.config.name} ${(command.config.usages) ? command.config.usages : ""}`, command.config.commandCategory, command.config.cooldowns, ((command.config.hasPermssion == 0) ? getText("user") : (command.config.hasPermssion == 1) ? getText("adminGroup") : getText("adminBot")), command.config.credits), threadID, messageID);
+  return fs.createReadStream(filePath);
 }
 
-module.exports. run = function({ api, event, args, getText }) {
+module.exports.run = async function({ api, event, args }) {
   const { commands } = global.client;
   const { threadID, messageID } = event;
-  const command = commands.get((args[0] || "").toLowerCase());
-  const threadSetting = global.data.threadData.get(parseInt(threadID)) || {};
-  const { autoUnsend, delayUnsend } = global.configModule[this.config.name];
-  const prefix = (threadSetting.hasOwnProperty("PREFIX")) ? threadSetting.PREFIX : global.config.PREFIX;
+  const prefix = "-";
+  const language = "ar_SY";
 
-  if (!command) {
-    const arrayInfo = [];
-    const page = parseInt(args[0]) || 1;
-    const numberOfOnePage = 100;
-    let i = 0;
-    let msg = "-·=»〖〗«=·-\n🍃 اوامر بوت ᏴϴᏆ. ぐ愛 🍃\n-·=»〖〗«=·-\n✨🍃\n";
+  const commandName = args[0]?.toLowerCase();
 
-    for (var [name, value] of (commands)) {
-      arrayInfo.push(name);
+  if (!commandName) {
+    let categories = {};
+
+    for (const [name, command] of commands.entries()) {
+      if (command.config.isHidden) continue;
+      
+      let category = command.config.commandCategory || "GENERAL";
+      if (langData[language][category.toUpperCase()]) {
+        category = langData[language][category.toUpperCase()];
+      }
+
+      if (!categories[category]) categories[category] = [];
+      categories[category].push(name);
     }
 
-    arrayInfo.sort((a, b) => a.data - b.data);
+    let list = "※═════『قائمة الاوامر』═════※\n\n";
 
-    const startSlice = numberOfOnePage*page - numberOfOnePage;
-    i = startSlice;
-    const returnArray = arrayInfo.slice(startSlice, startSlice + numberOfOnePage);
+    for (const [category, cmds] of Object.entries(categories)) {
+      list += ` □  ❴ ${category} ❵    \n\n`;
+      for (let i = 0; i < cmds.length; i += 4) {
+        const row = cmds.slice(i, i + 4).map(cmd => ` ◎ ${cmd}`).join("  ");
+        list += `${row}\n⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n`;
+      }
+      list += "\n";
+    }
 
-    for (let item of returnArray) msg += ` 〖💀🍃〗  ${++i} . 『${item}』\n\n\n${commands.get(item).config.description}\n—͟͟͞͞��\n`;
-    const randomText = [ "hy bhy baby","g","h"];
-    const text = `🍃—͟͟͞͞��\n-·=»〖〗«=·-\n🍃   صفحة واحد (${page}/${Math.ceil(arrayInfo.length/numberOfOnePage)}) 🍃\n-·=»〖〗«=·-\nBOT: °${prefix} ᏴϴᏆ. ぐ愛°\nقائمة📜 الاوامر: ${arrayInfo.length} `;
-    return api.sendMessage(msg  + text, threadID, async (error, info) => {
-      if (autoUnsend) {
-        await new Promise(resolve => setTimeout(resolve, delayUnsend * 10000000));
-        return api.unsendMessage(info.messageID);
-      } else return;
-    });
+    const total = Array.from(commands.values()).length;
+    list += `⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n`;
+    list += `    ○ ❴ الاوامر ❵  ◄  ${total}\n`;
+    list += `    ○ ❴ الاسم  ❵  ◄   سمسم \n`;
+    list += `    ○ ❴ المطور ❵  ◄  وسكي سان  \n`;
+    list += `⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯\n`;
+    list += ` ◄  ${prefix}اوامر + اسم الامر لرؤية تفاصيل الامر \n`;
+
+    const imageStream = await ensureImageExists();
+    return api.sendMessage({ body: list, attachment: imageStream }, threadID, messageID);
   }
 
-  return api.sendMessage(getText("moduleInfo", command.config.name, command.config.description, `${prefix}${command.config.name} ${(command.config.usages) ? command.config.usages : ""}`, command.config.commandCategory, command.config.cooldowns, ((command.config.hasPermssion == 0) ? getText("user") : (command.config.hasPermssion == 1) ? getText("adminGroup") : getText("adminBot")), command.config.credits), threadID, messageID);
+  const command = commands.get(commandName);
+  if (!command) return api.sendMessage(`❌ الأمر ${commandName} غير موجود.`, threadID, messageID);
+
+  let category = command.config.commandCategory || "GENERAL";
+  if (langData[language][category.toUpperCase()]) {
+    category = langData[language][category.toUpperCase()];
+  }
+
+  const msg = langData[language]["help.commandDetails"]
+    .replace("{name}", command.config.name)
+    .replace("{aliases}", command.config.aliases ? command.config.aliases.join(", ") : "لا يوجد")
+    .replace("{description}", command.config.description || "لا يوجد وصف")
+    .replace("{usage}", `${prefix}${command.config.name} ${command.config.usages || ""}`)
+    .replace("{permissions}", (command.config.hasPermssion == 0) ? "عضو" : (command.config.hasPermssion == 1) ? "إدارة المجموعة" : "إدارة البوت")
+    .replace("{category}", category)
+    .replace("{cooldown}", command.config.cooldowns || 1);
+
+  return api.sendMessage(msg, threadID, messageID);
 };
