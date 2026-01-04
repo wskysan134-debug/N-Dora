@@ -1,5 +1,5 @@
 module.exports.config = {
-  name: "بنكي",
+  name: "بانكاي",
   version: "2.0.5",
   hasPermssion: 1,
   credits: "عمر",
@@ -48,7 +48,7 @@ module.exports.config = {
 module.exports.run = async function({ api, args, Users, event, Threads, utils, client }) {
   let {messageID, threadID, senderID} = event;
   var info = await api.getThreadInfo(threadID);
-  if (!info.adminIDs.some(item => item.id == api.getCurrentUserID())) return api.sendMessage('ارفع البوت أدمن لاستخدام هذا الأمر \n الرجاء الإضافة والمحاولة مرة أخرى!', threadID, messageID);
+  if (!info.adminIDs.some(item => item.id == api.getCurrentUserID())) return api.sendMessage('ادمن اول'-' \n ارفع', threadID, messageID);
   var fs = require("fs-extra");
 
   if (!fs.existsSync(__dirname + `/cache/bans.json`)) {
@@ -75,7 +75,7 @@ module.exports.run = async function({ api, args, Users, event, Threads, utils, c
       for(let reasonwarn of mywarn) {
         msg += `reasonwarn\n`;
       }
-      api.sendMessage(`🙃لقد تم تحذيرك من قبل والسبب : ${msg}`, threadID, messageID);
+      api.sendMessage(`كان رقاصة 🐢 : ${msg}`, threadID, messageID);
     }
     else if(Object.keys(event.mentions).length != 0) {
       var message = "";
