@@ -1,11 +1,11 @@
 module.exports.config = {
-  name: "ابتيم",
+  name: "ابتايم ",
   version: "1.0.0",
   hasPermssion: 0,
-  credits: "Mustapha",
+  credits: "Ꮙ. ᎬᏢᏕᎥ  ᏕᏢᎯᏒᎠᎯ",
   description: "عرض معلومات السيرفر",
   commandCategory: "النظام",
-  usages: "ابتيم",
+  usages: "ابتايم ",
   cooldowns: 3
 };
 
@@ -29,24 +29,9 @@ module.exports.run = async function ({ api, event }) {
   const currentTime = moment.tz("Africa/Algiers").format("YYYY-MM-DD | HH:mm:ss");
 
   const message = `
-== 📊 بيانات السيرفر 📊 ==
 
-⏳ مدة تشغيل البوت: ${hours} ساعة ${minutes} دقيقة ${seconds} ثانية ✅
+⏳: ${hours} ساعة ${minutes} دقيقة ${seconds} ثانية ✅
 
-🖥️ نظام التشغيل: ${osType} ✅
-
-🧠 عدد الأنوية: ${cpuCores} ✅
-
-⚙️ نوع المعالج: ${cpuModel} ✅
-
-💾 ذاكرة كلية: ${totalMem} MB ✅
-
-📉 ذاكرة متاحة: ${freeMem} MB ✅
-
-📊 استهلاك الرام: ${memUsage}% ✅
-
-🕰️ الوقت الحالي: ${currentTime} ✅
-`;
 
   api.sendMessage(message, event.threadID, event.messageID);
 };
