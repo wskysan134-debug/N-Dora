@@ -4,7 +4,7 @@ module.exports.config = {
   name: "شيل",
   version: "2.0.0",
   hasPermssion: 2,
-  credits: "وسكي",
+  credits: "يوسكي",
   description: "مساعد ذكاء اصطناعي مطور لبناء وتعديل الأوامر وعرض الأكواد",
   commandCategory: "المطور",
   usages: "[اسم الملف / اصنع / انسخ]",
